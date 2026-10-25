@@ -1,0 +1,610 @@
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0b1220">
+  <meta name="description" content="نبض الأخبار - آخر الأخبار العالمية والتقنية والاقتصادية والذكاء الاصطناعي باللغة العربية.">
+
+  <title>نبض الأخبار | الأخبار بذكاء وإيجاز</title>
+
+  <!-- الخطوط والتصميم -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0b1220;
+      --panel: #111c30;
+      --border: #26364e;
+      --primary: #3b82f6;
+      --muted: #9caec5;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: 'Cairo', sans-serif;
+      background: var(--bg);
+      color: #f8fafc;
+      min-height: 100vh;
+    }
+
+    a { overflow-wrap: anywhere; }
+
+    button, input { font: inherit; }
+
+    button:focus-visible, a:focus-visible, input:focus-visible {
+      outline: 2px solid #60a5fa;
+      outline-offset: 3px;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+    }
+
+    .nav-link {
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 8px 16px;
+      white-space: nowrap;
+      color: #cbd5e1;
+      cursor: pointer;
+    }
+
+    .nav-link.active, .primary-btn {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+
+    .news-card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      overflow-wrap: anywhere;
+    }
+
+    .news-card h3 {
+      font-size: 18px;
+      line-height: 1.8;
+      font-weight: 700;
+      margin: 12px 0;
+    }
+
+    .news-card p {
+      color: #cbd5e1;
+      line-height: 1.9;
+      white-space: pre-line;
+    }
+
+    .muted { color: var(--muted); }
+
+    .primary-btn, .secondary-btn {
+      padding: 10px 16px;
+      border-radius: 10px;
+      cursor: pointer;
+      border: 1px solid var(--border);
+    }
+
+    .secondary-btn { background: #17243a; }
+
+    .primary-btn:disabled, .secondary-btn:disabled {
+      opacity: .6;
+      cursor: wait;
+    }
+
+    .status-dot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #f59e0b;
+      margin-left: 7px;
+    }
+
+    .status-dot.online { background: #34d399; }
+    .status-dot.offline { background: #f87171; }
+
+    .field {
+      width: 100%;
+      background: #0b1220;
+      color: white;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px;
+    }
+
+    .hidden { display: none !important; }
+
+    footer {
+      border-top: 1px solid var(--border);
+    }
+
+    .source-link {
+      color: #60a5fa;
+      text-decoration: none;
+      font-weight: 700;
+      margin-top: auto;
+      padding-top: 18px;
+    }
+
+    .source-link:hover { text-decoration: underline; }
+
+    body.light {
+      color-scheme: light;
+      --bg: #f1f5f9;
+      --panel: #ffffff;
+      --border: #dbe3ee;
+      --muted: #64748b;
+      color: #172033;
+    }
+
+    body.light .news-card p { color: #475569; }
+    body.light .nav-link { color: #334155; }
+    body.light .nav-link.active { color: white; }
+    body.light .secondary-btn { background: #e2e8f0; color: #172033; }
+    body.light .field { background: white; color: #172033; }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        scroll-behavior: auto !important;
+        animation: none !important;
+        transition: none !important;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- رأس الموقع -->
+  <header class="border-b border-slate-700/60">
+    <div class="max-w-7xl mx-auto px-4 py-5 flex flex-wrap items-center justify-between gap-4">
+      <a href="#" class="text-2xl md:text-3xl font-extrabold no-underline text-white">
+        نبض <span class="text-blue-400">الأخبار</span>
+      </a>
+
+      <div class="flex flex-wrap items-center gap-3">
+        <span id="connection-status" class="text-sm muted" role="status" aria-live="polite">
+          <span class="status-dot"></span> لم يتم الاتصال بعد
+        </span>
+        <button id="theme-toggle" class="secondary-btn" type="button">
+          تغيير المظهر
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 py-8">
+    <!-- مقدمة -->
+    <section class="panel p-6 md:p-9 mb-7">
+      <p class="text-blue-400 font-bold mb-2">العالم بين يديك</p>
+      <h1 class="text-3xl md:text-4xl font-extrabold leading-relaxed">
+        أهم الأخبار في مكان واحد
+      </h1>
+      <p class="muted mt-3 leading-8">
+        تابع الأخبار العالمية والتقنية والاقتصادية والذكاء الاصطناعي،
+        مع روابط المصادر الأصلية.
+      </p>
+    </section>
+
+    <!-- تصنيفات الأخبار -->
+    <nav class="flex flex-wrap gap-2 mb-6" aria-label="تصنيفات الأخبار">
+      <button class="nav-link active" data-category="all" type="button">الكل</button>
+      <button class="nav-link" data-category="world" type="button">العالم</button>
+      <button class="nav-link" data-category="tech" type="button">التقنية</button>
+      <button class="nav-link" data-category="economy" type="button">الاقتصاد</button>
+      <button class="nav-link" data-category="ai" type="button">الذكاء الاصطناعي</button>
+    </nav>
+
+    <!-- عنوان الأخبار وأزرار التحكم -->
+    <section>
+      <div class="flex flex-wrap items-center justify-between gap-3 mb-5">
+        <h2 class="text-2xl font-bold">أحدث الأخبار</h2>
+        <div class="flex gap-2">
+          <button id="refresh-btn" class="secondary-btn" type="button">
+            تحديث الأخبار
+          </button>
+          <button id="retry-btn" class="primary-btn hidden" type="button">
+            إعادة المحاولة
+          </button>
+        </div>
+      </div>
+
+      <div id="loading" class="panel p-8 text-center muted" role="status">
+        جارٍ تحميل الأخبار...
+      </div>
+
+      <div id="error-box" class="panel p-5 mb-5 hidden" role="alert">
+        <h3 class="font-bold text-red-400 mb-2">تعذر تحميل الأخبار</h3>
+        <p id="error-message" class="muted leading-8"></p>
+        <p class="text-sm muted mt-2">
+          تحقق من رابط Supabase والمفتاح العام ووجود جدول news وصلاحيات القراءة.
+        </p>
+      </div>
+
+      <div id="news-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"></div>
+
+      <p id="empty-message" class="muted text-center py-8 hidden">
+        لا توجد أخبار في هذا التصنيف.
+      </p>
+    </section>
+
+    <!-- فيديوهات -->
+    <section class="mt-12">
+      <h2 class="text-2xl font-bold mb-5">موجز الفيديو</h2>
+      <div class="panel p-4 md:p-6">
+        <p class="muted mb-4">
+          شاهد الفيديوهات الإخبارية من قناتنا.
+        </p>
+        <a
+          href="https://www.youtube.com/@eisaali240"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="primary-btn inline-block no-underline"
+        >
+          زيارة قناة يوتيوب
+        </a>
+      </div>
+    </section>
+
+    <!-- مساحة إعلانية -->
+    <section class="panel p-6 text-center mt-8">
+      <p class="muted">مساحة إعلانية</p>
+      <p class="text-sm muted mt-2">
+        يمكن إضافة الإعلانات هنا بعد قبول الموقع في شبكة الإعلانات المناسبة.
+      </p>
+    </section>
+
+    <!-- إدارة الأخبار -->
+    <section class="panel p-6 mt-8">
+      <h2 class="text-xl font-bold mb-3">إدارة الأخبار</h2>
+      <p class="muted leading-8">
+        تُجلب الأخبار من قاعدة البيانات. إضافة الأخبار تتطلب لوحة إدارة
+        آمنة وصلاحيات مناسبة؛ لا تضع مفتاح service_role في هذا الملف.
+      </p>
+    </section>
+  </main>
+
+  <footer class="mt-12 py-6 text-center">
+    <p class="muted text-sm">
+      © <span id="year"></span> نبض الأخبار — جميع الحقوق محفوظة
+    </p>
+  </footer>
+
+  <script>
+    "use strict";
+
+    // =====================================================
+    // إعدادات Supabase
+    // استبدل المفتاح بالمفتاح العام Publishable أو anon فقط.
+    // لا تستخدم service_role أو أي مفتاح سري هنا.
+    // =====================================================
+
+    const SUPABASE_URL =
+      "https://bbqkiwnpcmhtxvrprzeb.supabase.co";
+
+    const SUPABASE_KEY =
+      "ضع_المفتاح_العام_هنا";
+
+    const TABLE_NAME = "news";
+    const REFRESH_INTERVAL = 5 * 60 * 1000;
+
+    const loadingEl = document.getElementById("loading");
+    const gridEl = document.getElementById("news-grid");
+    const errorBox = document.getElementById("error-box");
+    const errorMessage = document.getElementById("error-message");
+    const statusEl = document.getElementById("connection-status");
+    const refreshBtn = document.getElementById("refresh-btn");
+    const retryBtn = document.getElementById("retry-btn");
+    const emptyMessage = document.getElementById("empty-message");
+
+    let allArticles = [];
+    let selectedCategory = "all";
+    let requestInProgress = false;
+
+    // عرض حالة الاتصال الحقيقية
+    function setStatus(message, state) {
+      statusEl.replaceChildren();
+
+      const dot = document.createElement("span");
+      dot.className = "status-dot" +
+        (state === "online" ? " online" :
+         state === "offline" ? " offline" : "");
+
+      statusEl.append(dot, document.createTextNode(message));
+    }
+
+    // التحقق من رابط المصدر
+    function getSafeURL(value) {
+      if (!value) return null;
+
+      try {
+        const url = new URL(value);
+        if (url.protocol === "https:" || url.protocol === "http:") {
+          return url.href;
+        }
+      } catch (_) {
+        return null;
+      }
+
+      return null;
+    }
+
+    // تاريخ الخبر
+    function formatDate(value) {
+      if (!value) return "التاريخ غير متاح";
+
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return "التاريخ غير متاح";
+
+      return date.toLocaleDateString("ar", {
+        year: "numeric",
+        month: "long",
+        day: "numeric"
+      });
+    }
+
+    // تحويل التصنيفات المحتملة إلى أسماء عربية
+    function categoryLabel(value) {
+      const categories = {
+        world: "العالم",
+        tech: "التقنية",
+        technology: "التقنية",
+        economy: "الاقتصاد",
+        ai: "الذكاء الاصطناعي",
+        "الذكاء الاصطناعي": "الذكاء الاصطناعي",
+        "العالم": "العالم",
+        "التقنية": "التقنية",
+        "الاقتصاد": "الاقتصاد"
+      };
+
+      return categories[value] || value || "عام";
+    }
+
+    function categoryMatches(article, category) {
+      if (category === "all") return true;
+
+      const raw = String(
+        article.category || article.category_slug || ""
+      ).toLowerCase();
+
+      const aliases = {
+        world: ["world", "العالم"],
+        tech: ["tech", "technology", "التقنية"],
+        economy: ["economy", "الاقتصاد"],
+        ai: ["ai", "artificial intelligence", "الذكاء الاصطناعي"]
+      };
+
+      return (aliases[category] || [category]).includes(raw);
+    }
+
+    // بناء بطاقة خبر باستخدام عناصر DOM آمنة
+    function createNewsCard(article) {
+      const card = document.createElement("article");
+      card.className = "news-card";
+
+      const meta = document.createElement("div");
+      meta.className = "flex flex-wrap items-center justify-between gap-2 text-sm muted";
+
+      const category = document.createElement("span");
+      category.textContent = categoryLabel(
+        article.category || article.category_slug
+      );
+
+      const date = document.createElement("time");
+      date.textContent = formatDate(article.created_at);
+
+      meta.append(category, date);
+
+      const title = document.createElement("h3");
+      title.textContent = article.title || "بدون عنوان";
+
+      const description = document.createElement("p");
+      description.textContent =
+        article.content ||
+        article.description ||
+        article.summary ||
+        "لا يوجد ملخص متاح لهذا الخبر.";
+
+      card.append(meta, title, description);
+
+      const sourceURL = getSafeURL(
+        article.url || article.source_url || article.link
+      );
+
+      if (sourceURL) {
+        const link = document.createElement("a");
+        link.href = sourceURL;
+        link.target = "_blank";
+        link.rel = "noopener noreferrer";
+        link.className = "source-link";
+        link.textContent = "قراءة المصدر ←";
+        card.append(link);
+      }
+
+      return card;
+    }
+
+    function renderNews() {
+      gridEl.replaceChildren();
+
+      const articles = allArticles.filter(article =>
+        categoryMatches(article, selectedCategory)
+      );
+
+      emptyMessage.classList.toggle("hidden", articles.length > 0);
+
+      for (const article of articles) {
+        gridEl.append(createNewsCard(article));
+      }
+    }
+
+    async function fetchNews() {
+      if (requestInProgress) return;
+
+      if (
+        !SUPABASE_KEY ||
+        SUPABASE_KEY === "ضع_المفتاح_العام_هنا"
+      ) {
+        setStatus("المفتاح العام غير مضبوط", "offline");
+        errorMessage.textContent =
+          "افتح إعدادات المشروع في Supabase وانسخ المفتاح العام Publishable أو anon ثم ضعه في الكود.";
+        errorBox.classList.remove("hidden");
+        retryBtn.classList.remove("hidden");
+        loadingEl.classList.add("hidden");
+        return;
+      }
+
+      requestInProgress = true;
+      refreshBtn.disabled = true;
+      retryBtn.disabled = true;
+
+      loadingEl.classList.remove("hidden");
+      errorBox.classList.add("hidden");
+      retryBtn.classList.add("hidden");
+      setStatus("جارٍ الاتصال...", "pending");
+
+      const endpoint =
+        SUPABASE_URL +
+        "/rest/v1/" + TABLE_NAME +
+        "?select=*&order=created_at.desc&limit=50";
+
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 15000);
+
+      try {
+        const response = await fetch(endpoint, {
+          method: "GET",
+          headers: {
+            "apikey": SUPABASE_KEY,
+            "Authorization": "Bearer " + SUPABASE_KEY
+          },
+          signal: controller.signal
+        });
+
+        if (!response.ok) {
+          let details = "";
+
+          try {
+            const body = await response.json();
+            details = body.message || body.hint || "";
+          } catch (_) {}
+
+          if (response.status === 401 || response.status === 403) {
+            throw new Error(
+              "تم رفض الوصول. تحقق من المفتاح العام وسياسات القراءة RLS. " +
+              details
+            );
+          }
+
+          if (response.status === 404) {
+            throw new Error(
+              "لم يتم العثور على جدول news أو واجهة البيانات. تحقق من اسم الجدول."
+            );
+          }
+
+          if (response.status === 400) {
+            throw new Error(
+              "طلب البيانات غير صحيح. تحقق من إعدادات جدول الأخبار. " +
+              details
+            );
+          }
+
+          throw new Error(
+            "فشل طلب الأخبار برمز HTTP " + response.status +
+            (details ? ": " + details : "")
+          );
+        }
+
+        const data = await response.json();
+
+        if (!Array.isArray(data)) {
+          throw new Error("استجابة قاعدة البيانات ليست قائمة أخبار صحيحة.");
+        }
+
+        allArticles = data;
+        renderNews();
+
+        setStatus("تم الاتصال بقاعدة البيانات", "online");
+
+        if (data.length === 0) {
+          emptyMessage.textContent =
+            "اتصل الموقع بقاعدة البيانات بنجاح، لكن لا توجد أخبار منشورة.";
+          emptyMessage.classList.remove("hidden");
+        }
+
+      } catch (error) {
+        console.error("News loading error:", error);
+
+        setStatus("تعذر الاتصال", "offline");
+
+        if (error.name === "AbortError") {
+          errorMessage.textContent =
+            "انتهت مهلة الاتصال. تحقق من الإنترنت وحاول مرة أخرى.";
+        } else {
+          errorMessage.textContent =
+            error.message ||
+            "حدث خطأ غير متوقع أثناء تحميل الأخبار.";
+        }
+
+        errorBox.classList.remove("hidden");
+        retryBtn.classList.remove("hidden");
+
+      } finally {
+        clearTimeout(timeout);
+        loadingEl.classList.add("hidden");
+        refreshBtn.disabled = false;
+        retryBtn.disabled = false;
+        requestInProgress = false;
+      }
+    }
+
+    // تصنيفات الأخبار
+    document.querySelectorAll("[data-category]").forEach(button => {
+      button.addEventListener("click", () => {
+        selectedCategory = button.dataset.category;
+
+        document.querySelectorAll("[data-category]").forEach(item => {
+          item.classList.toggle("active", item === button);
+        });
+
+        renderNews();
+      });
+    });
+
+    // أزرار التحديث
+    refreshBtn.addEventListener("click", fetchNews);
+    retryBtn.addEventListener("click", fetchNews);
+
+    // تبديل المظهر
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+      document.body.classList.toggle("light");
+    });
+
+    document.getElementById("year").textContent =
+      new Date().getFullYear();
+
+    // التحميل الأول ثم التحديث كل خمس دقائق
+    fetchNews();
+    setInterval(() => {
+      if (document.visibilityState === "visible") {
+        fetchNews();
+      }
+    }, REFRESH_INTERVAL);
+  </script>
+</body>
+</html>
